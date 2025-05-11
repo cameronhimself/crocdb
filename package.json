@@ -1,0 +1,36 @@
+{
+  "name": "crocdb",
+  "version": "0.0.0",
+  "description": "A CLI and library for querying CrocDB.",
+  "license": "ISC",
+  "author": "J. Cameron McDonald",
+  "repository": "github:cameronhimself/crocdb",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": "dist/cli.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "rollup -c",
+    "prepack": "npm run clean && npm run build",
+    "test": "mocha -r tsx src/**/*.test.ts"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/chai": "^5.2.2",
+    "@types/commander": "^2.12.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^18.19.100",
+    "chai": "^5.2.0",
+    "fetch-mock": "^12.5.2",
+    "mocha": "^11.2.2",
+    "release-it": "^19.0.2",
+    "rollup": "^4.40.2",
+    "tslib": "^2.8.1",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
