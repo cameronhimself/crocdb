@@ -8,6 +8,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": "dist/cli.js",
+  "files": ["dist"],
   "scripts": {
     "clean": "npx rimraf dist",
     "build": "rollup -c",
