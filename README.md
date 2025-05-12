@@ -1,3 +1,5 @@
+[![NPM Downloads](https://img.shields.io/npm/dw/crocdb)](https://www.npmjs.com/package/crocdb)
+
 # crocdb
 
 A library and CLI tool for using the [CrocDB API](https://crocdb.net/static/pages/docs/api/index.html).
