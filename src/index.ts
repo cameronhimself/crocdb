@@ -36,16 +36,27 @@ export namespace CrocDB {
   export type RegionsResponse = Record<RegionCode, string>;
   export type PlatformsResponse = Record<PlatformCode, string>;
 
+/*
+Error querying http://index.html: 400 BAD REQUEST
+Request Data:
+{
+  "foo": "bar",
+}
+Response body: "",
+*/
+
   export class RequestError extends Error {
-    constructor(response: Response) {
-      super();
-      this.message = "Unknown error";
-      if (response.status >= 400 && response.status < 500) {
-        this.message = "Client error";
-      }
-      if (response.status >= 500) {
-        this.message = "Server error";
-      }
+    static async fromResponse<TRequestData extends object>(response: Response, requestData?: TRequestData): Promise<RequestError> {
+      const err = new RequestError();
+      const messageLines = [];
+      messageLines.push(...[
+        `Error querying ${response.url}`,
+        `Status: ${response.status} ${response.statusText}`,
+        `Request Data: ${JSON.stringify(requestData, undefined, 2)}`,
+        `Reponse body: ${await response.text()}`,
+      ]);
+      err.message = messageLines.join("\n");
+      return err;
     }
   }
 };
@@ -59,7 +70,7 @@ export const api = {
     }
     const response = await fetch(`${CROCDB_API_BASE_URL}/search?${params}`);
     if (!response.ok) {
-      throw new CrocDB.RequestError(response);
+      throw await CrocDB.RequestError.fromResponse(response, params);
     }
     const rawResponse = await response.json();
     return rawResponse.map((rom: Record<string, any>) => ({
@@ -79,14 +90,14 @@ export const api = {
   platforms: async (): Promise<CrocDB.PlatformsResponse> => {
     const response = await fetch(`${CROCDB_API_BASE_URL}/platforms`);
     if (!response.ok) {
-      throw new CrocDB.RequestError(response);
+      throw await CrocDB.RequestError.fromResponse(response);
     }
     return await response.json();
   },
   regions: async (): Promise<CrocDB.RegionsResponse> => {
     const response = await fetch(`${CROCDB_API_BASE_URL}/regions`);
     if (!response.ok) {
-      throw new CrocDB.RequestError(response);
+      throw await CrocDB.RequestError.fromResponse(response);
     }
     return await response.json();
   }
