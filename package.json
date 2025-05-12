@@ -1,6 +1,6 @@
 {
   "name": "crocdb",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A CLI and library for querying CrocDB.",
   "license": "ISC",
   "author": "J. Cameron McDonald",
@@ -8,7 +8,9 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": "dist/cli.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "clean": "npx rimraf dist",
     "build": "rollup -c",
