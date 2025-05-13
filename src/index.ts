@@ -36,15 +36,6 @@ export namespace CrocDB {
   export type RegionsResponse = Record<RegionCode, string>;
   export type PlatformsResponse = Record<PlatformCode, string>;
 
-/*
-Error querying http://index.html: 400 BAD REQUEST
-Request Data:
-{
-  "foo": "bar",
-}
-Response body: "",
-*/
-
   export class RequestError extends Error {
     static async fromResponse<TRequestData extends object>(response: Response, requestData?: TRequestData): Promise<RequestError> {
       const err = new RequestError();
