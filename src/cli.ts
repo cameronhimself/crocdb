@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Command } from "commander";
+import { Command as BaseCommand } from "commander";
 import { version } from "../package.json";
 import { PLATFORM_CODES, REGION_CODES } from "./constants";
 import { api } from "./index";
@@ -16,8 +16,19 @@ const stripUndefined = (obj: Record<string, any>) => {
   return newObj;
 };
 
-const program = new Command();
+const msg = (...strings: Array<string | Array<string>>) => {
+  const lines = strings.map(s => Array.isArray(s) ? s.join(" ") : s);
+  return lines.join("\n");
+};
 
+class Command extends BaseCommand {
+  constructor(name?: string) {
+    super(name);
+    this.configureHelp({ helpWidth: 80 });
+  }
+}
+
+const program = new Command();
 const NAME = "crocdb";
 
 program
@@ -26,19 +37,37 @@ program
   .version(version)
 
 program.addCommand(new Command("search")
-  .description("Fetch a list of ROMs from CrocDB based on search parameters. Results are returned as a JSON array. See https://crocdb.net/static/pages/docs/api/index.html for details and examples.")
+  .description(msg(
+    ["Fetch a list of ROMs from CrocDB based on search parameters.",
+    "Results are returned as a JSON array. For details and examples,",
+    "see the CrocDB API documentation:"],
+    "",
+    "https://crocdb.net/static/pages/docs/api/index.html",
+  ))
   .option("--game-id <id>", "The game ID to search for.")
   .option("--slug <slug>", "The slug to search for.")
   .option("--original-name <name>", "The original name to search for.")
   .option("--title <title>", "The title to search for.")
   .option("--title-human <title>", "The human-readable title to search for.")
-  .option("--platform <platform...>", `Space-separated list of platforms codes to search for. Valid platform codes are: ${PLATFORM_CODES.join(", ")}`)
-  .option("--regions <region...>", `Space-separated list of region codes to search for. Valid region codes are: ${REGION_CODES.join(", ")}`)
+  .option("--platform <platform...>",
+    `Space-separated list of platforms codes to search for. Valid platform codes are: ${PLATFORM_CODES.join(", ")}`)
+  .option("--regions <region...>",
+    `Space-separated list of region codes to search for. Valid region codes are: ${REGION_CODES.join(", ")}`)
   .option("--format <format>", "Format of the ROM to search for.")
   .option("--size <size>", "Size of the ROM to search for. Not commonly used for search.")
   .option("--size-human <size>", "Human-readable size of the ROM to search for. Not commonly used for search.")
-  .option("--limit <n>", "Limit the number of results to return. Default is 1. Can't return more than 50.")
-  .option("--page <n>", "Page number to return if the number of results is greater than --limit.")
+  .option("--limit <n>", msg(
+    "Limit the number of results to return. Default is 1. Zero or negative values disable the limit.",
+    "",
+    ["The CrocDB API has a max limit of 50, so if you pass a value greater than",
+    "that (or disable the limit), multiple API calls will be made and aggregated",
+    "into a single result. Disabling the limit should be done with caution as",
+    "it can result in very lengthy requests when combined with a generic search query."]
+  ))
+  .option("--page <n>", msg([
+    "Page number to get if the number of results is greater than --limit.",
+    "Ignored if the limit is disabled or greater than 50."
+  ]))
   .action(async (opts) => {
     const query = stripUndefined({
       gameid: opts.gameId,

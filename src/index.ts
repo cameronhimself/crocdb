@@ -54,29 +54,53 @@ export namespace CrocDB {
 
 export const api = {
   search: async (request: CrocDB.SearchRequest): Promise<CrocDB.SearchResponse> => {
-    const params = new URLSearchParams();
-    for (const key in request) {
-      const value = request[key as keyof CrocDB.SearchRequest];
-      params.set(key, typeof value === "string" ? value : JSON.stringify(value));
+    const doFetch = async (page?: number): Promise<CrocDB.SearchResponse> => {
+      const params = new URLSearchParams();
+      for (const key in request) {
+        const value = request[key as keyof CrocDB.SearchRequest];
+        params.set(key, typeof value === "string" ? value : JSON.stringify(value));
+      }
+      if (page !== undefined) {
+        params.set("page", JSON.stringify(page));
+      }
+      const response = await fetch(`${CROCDB_API_BASE_URL}/search?${params}`);
+      if (!response.ok) {
+        throw await CrocDB.RequestError.fromResponse(response, params);
+      }
+      const rawResponse = await response.json();
+      return rawResponse.map((rom: Record<string, any>) => ({
+        gameid: rom.gameid,
+        slug: rom.slug,
+        original_name: rom.original_name,
+        title: rom.title,
+        title_human: rom.title_human,
+        platform: rom.platform,
+        regions: rom.regions,
+        format: rom.format,
+        size: rom.size,
+        size_human: rom.size_human,
+        links: rom.links,
+      } satisfies CrocDB.ROM));
+    };
+
+    const limit = request.limit === undefined ? 1 : request.limit;
+    if (limit > 50 || limit <= 0) {
+      let page = 1;
+      let partialResult = await doFetch(page);
+      const result: typeof partialResult = [];
+    
+      while(partialResult.length) {
+        page++;
+        result.push(...partialResult);
+        if (limit > 50 && result.length >= limit) {
+          result.length = limit;
+          break;
+        }
+        partialResult = await doFetch(page);
+      }
+      return result;
     }
-    const response = await fetch(`${CROCDB_API_BASE_URL}/search?${params}`);
-    if (!response.ok) {
-      throw await CrocDB.RequestError.fromResponse(response, params);
-    }
-    const rawResponse = await response.json();
-    return rawResponse.map((rom: Record<string, any>) => ({
-      gameid: rom.gameid,
-      slug: rom.slug,
-      original_name: rom.original_name,
-      title: rom.title,
-      title_human: rom.title_human,
-      platform: rom.platform,
-      regions: rom.regions,
-      format: rom.format,
-      size: rom.size,
-      size_human: rom.size_human,
-      links: rom.links,
-    } satisfies CrocDB.ROM));
+    return await doFetch();
   },
   platforms: async (): Promise<CrocDB.PlatformsResponse> => {
     const response = await fetch(`${CROCDB_API_BASE_URL}/platforms`);

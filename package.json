@@ -15,6 +15,7 @@
     "clean": "npx rimraf dist",
     "build": "rollup -c",
     "prepack": "npm run clean && npm run build",
+    "crocdb": "tsx src/cli.ts",
     "test": "mocha -r tsx src/**/*.test.ts"
   },
   "dependencies": {
